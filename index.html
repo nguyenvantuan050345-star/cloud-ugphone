@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLOUD FREE - PROJECT DOG</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0d1117; color: #c9d1d9; padding: 15px; }
+        .header { background: #161b22; padding: 15px; border-radius: 10px; border: 1px solid #30363d; text-align: center; margin-bottom: 15px; }
+        .user-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: #161b22; padding: 15px; border-radius: 8px; border: 1px solid #30363d; text-align: center; }
+        .stat-card h4 { font-size: 12px; color: #8b949e; text-transform: uppercase; }
+        .stat-card p { font-size: 20px; font-weight: bold; color: #58a6ff; margin-top: 5px; }
+        
+        .section-title { font-size: 16px; color: #f0883e; margin: 15px 0 10px 0; display: flex; align-items: center; gap: 5px; }
+        
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+        .item-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 12px; text-align: center; position: relative; }
+        .badge { position: absolute; top: 5px; right: 5px; background: #238636; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
+        .item-card img { width: 45px; height: 45px; margin: 10px 0; }
+        .item-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; }
+        .btn-buy { background: #1f6feb; color: #fff; border: none; width: 100%; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-buy:hover { background: #388bfd; }
+
+        .mission-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .mission-info h5 { font-size: 14px; color: #58a6ff; }
+        .mission-info p { font-size: 11px; color: #8b949e; }
+        .btn-do { background: #238636; color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h3 style="color: #f0883e;">🔥 PROJECT DOG CLOUD 🔥</h3>
+        <p style="font-size: 12px; color: #8b949e;">Hệ Thống Cày Xu Đổi Máy UgPhone 0 Đồng</p>
+    </div>
+
+    <div class="user-stats">
+        <div class="stat-card">
+            <h4>Xu Hiện Có</h4>
+            <p id="userXu">0</p>
+        </div>
+        <div class="stat-card">
+            <h4>Nhiệm Vụ Hôm Nay</h4>
+            <p id="userMission">0/5</p>
+        </div>
+    </div>
+
+    <div class="section-title">🛒 CỬA HÀNG ĐỔI CODE</div>
+    <div class="shop-grid">
+        <div class="item-card">
+            <span class="badge">Còn 99</span>
+            <div style="font-size: 30px;">📱</div>
+            <div class="item-title">CODE UGPHONE 4H</div>
+            <button class="btn-buy" onclick="buyCode(400)">400 Xu</button>
+        </div>
+    </div>
+
+    <div class="section-title">⚡ NHIỆM VỤ CÀY XU</div>
+    
+    <div class="mission-card">
+        <div class="mission-info">
+            <h5>VƯỢT LINK LAYMA.NET</h5>
+            <p>Phần thưởng: +400 Xu</p>
+        </div>
+        <button class="btn-do" onclick="doMission('https://layma.net')">LÀM NGAY</button>
+    </div>
+
+    <div class="mission-card">
+        <div class="mission-info">
+            <h5>VƯỢT LINK LINK4M</h5>
+            <p>Phần thưởng: +400 Xu</p>
+        </div>
+        <button class="btn-do" onclick="doMission('https://link4m.com') text-align: center;">LÀM NGAY</button>
+    </div>
+
+    <script>
+        let currentXu = localStorage.getItem('myXu') ? parseInt(localStorage.getItem('myXu')) : 0;
+        document.getElementById('userXu').innerText = currentXu;
+
+        function doMission(url) {
+            alert("Sau khi vượt link xong, ní quay lại đây nhận 400 Xu nhé!");
+            window.open(url, '_blank');
+            currentXu += 400;
+            localStorage.setItem('myXu', currentXu);
+            document.getElementById('userXu').innerText = currentXu;
+        }
+
+        function buyCode(price) {
+            if (currentXu < price) {
+                alert("Ní không đủ Xu! Hãy làm nhiệm vụ vượt link để cày thêm.");
+            } else {
+                currentXu -= price;
+                localStorage.setItem('myXu', currentXu);
+                document.getElementById('userXu').innerText = currentXu;
+                alert("ĐỔI THÀNH CÔNG! Code UgPhone 4H của ní: UG4H-DOG-" + Math.floor(Math.random() * 899999 + 100000));
+            }
+        }
+    </script>
+
+</body>
+</html>
