@@ -1,139 +1,50 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bilibili Downloader</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f5f7;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-        }
-        h2 {
-            color: #fb7299;
-            margin-bottom: 20px;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 14px;
-            outline: none;
-        }
-        input:focus {
-            border-color: #fb7299;
-        }
-        button {
-            background: #fb7299;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        button:hover {
-            background: #e05d84;
-        }
-        .loading {
-            margin-top: 15px;
-            color: #666;
-            font-style: italic;
-            display: none;
-        }
-        .result {
-            margin-top: 20px;
-            text-align: left;
-            display: none;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .result a {
-            display: block;
-            background: #00aeec;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
+import os
+import subprocess
+import whisper
 
-    <div class="card">
-        <h2>Tải Video Bilibili</h2>
-        <input type="text" id="urlInput" placeholder="Dán link Bilibili vào đây...">
-        <button onclick="fetchVideo()">Lấy Link</button>
-        
-        <div id="loading" class="loading">Đang phân tích video, chờ chút nhé...</div>
-        
-        <div id="result" class="result">
-            <p id="videoTitle" style="font-weight: bold; font-size: 14px; margin-bottom: 10px; color: #333;"></p>
-            <a id="downloadBtn" href="#" target="_blank">📥 Tải Video Về Máy</a>
-        </div>
-    </div>
+def tao_phu_de_hardsub(video_path, output_path="output_hardsub.mp4"):
+    print("1. Đang trích xuất và nhận diện giọng nói từ video bằng Whisper...")
+    # Load model whisper (có thể đổi thành 'base', 'small', 'medium' tùy độ mạnh yếu của máy)
+    model = whisper.load_model("base")
+    
+    # Chạy AI nhận diện sub
+    result = model.transcribe(video_path)
+    
+    # Tạo file phụ đề .srt từ kết quả nhận diện
+    srt_path = "sub_tam_thoi.srt"
+    with open(srt_path, "w", encoding="utf-8") as f:
+        for i, segment in enumerate(result["segments"], start=1):
+            start_time = dinh_dang_thoi_gian(segment["start"])
+            end_time = dinh_dang_thoi_gian(segment["end"])
+            text = segment["text"].strip()
+            
+            f.write(f"{i}\n{start_time} --> {end_time}\n{text}\n\n")
+            
+    print(f"2. Đã tạo xong file phụ đề tạm: {srt_path}")
+    print("3. Đang tiến hành ép phụ đề cứng (hardsub) vào video qua FFmpeg...")
+    
+    # Dùng ffmpeg ép sub cứng vào video
+    # Lưu ý: đường dẫn file srt cần được xử lý dấu gạch chéo nếu chạy trên Windows
+    cmd = [
+        "ffmpeg", "-y", "-i", video_path,
+        "-vf", f"subtitles={srt_path}:force_style='FontSize=24,PrimaryColour=&H00FFFF&'",
+        output_path
+    ]
+    
+    subprocess.run(cmd, check=True)
+    print(f"4. Xong xuôi! Video hardsub đã lưu tại: {output_path}")
 
-    <script>
-        async function fetchVideo() {
-            let url = document.getElementById('urlInput').value.trim();
-            let loading = document.getElementById('loading');
-            let resultBox = document.getElementById('result');
-            let downloadBtn = document.getElementById('downloadBtn');
-            let videoTitle = document.getElementById('videoTitle');
+def dinh_dang_thoi_gian(seconds):
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    milliseconds = int((seconds - int(seconds)) * 1000)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
 
-            if (!url) {
-                alert('Chưa dán link kìa bạn ơi!');
-                return;
-            }
-
-            loading.style.display = 'block';
-            resultBox.style.display = 'none';
-
-            try {
-                // Sử dụng API công khai để trích xuất link ngầm
-                let response = await fetch(`https://tikwm.com/api/?url=${encodeURIComponent(url)}`);
-                let data = await response.json();
-
-                loading.style.display = 'none';
-
-                if (data && data.data) {
-                    let videoData = data.data;
-                    videoTitle.innerText = videoData.title || "Video Bilibili";
-                    downloadBtn.href = videoData.play || videoData.url;
-                    resultBox.style.display = 'block';
-                } else {
-                    alert('Không lấy được video, hãy kiểm tra lại link nhé!');
-                }
-            } catch (error) {
-                loading.style.display = 'none';
-                alert('Có lỗi xảy ra khi kết nối tới máy chủ giải mã!');
-            }
-        }
-    </script>
-
-</body>
-</html>
+if __name__ == "__main__":
+    # Thay tên file video của bạn vào đây
+    video_input = "video_cua_ban.mp4"
+    if os.path.exists(video_input):
+        tao_phu_de_hardsub(video_input)
+    else:
+        print(f"Không tìm thấy file video {video_input} kìa bạn ơi!")
