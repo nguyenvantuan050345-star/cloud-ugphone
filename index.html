@@ -3,41 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bilibili Video Downloader</title>
+    <title>Bilibili Downloader</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
+            font-family: Arial, sans-serif;
+            background: #f4f5f7;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
         .card {
             background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 480px;
+            max-width: 450px;
             text-align: center;
         }
         h2 {
-            color: #fb7299; /* Màu hồng đặc trưng của Bilibili */
-            margin-bottom: 25px;
+            color: #fb7299;
+            margin-bottom: 20px;
         }
         input {
             width: 100%;
-            padding: 14px;
-            margin-bottom: 15px;
-            border: 2px solid #e1e4e8;
-            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             box-sizing: border-box;
-            font-size: 15px;
+            font-size: 14px;
             outline: none;
-            transition: border-color 0.3s;
         }
         input:focus {
             border-color: #fb7299;
@@ -46,80 +45,93 @@
             background: #fb7299;
             color: white;
             border: none;
-            padding: 14px 20px;
+            padding: 12px;
             width: 100%;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            transition: background 0.3s;
         }
         button:hover {
             background: #e05d84;
         }
-        .result-box {
-            margin-top: 25px;
-            text-align: left;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 10px;
+        .loading {
+            margin-top: 15px;
+            color: #666;
+            font-style: italic;
             display: none;
         }
-        .result-box a {
+        .result {
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .result a {
             display: block;
-            text-align: center;
             background: #00aeec;
             color: white;
-            padding: 12px;
-            border-radius: 8px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
             text-decoration: none;
-            margin-top: 10px;
             font-weight: bold;
-        }
-        .loading {
-            color: #666;
-            margin-top: 15px;
-            font-style: italic;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>Bilibili Downloader</h2>
-        <input type="text" id="urlInput" placeholder="Dán link Bilibili vào đây (VD: https://b23.tv/...)">
-        <button onclick="handleDownload()">Tải Ngay</button>
+        <h2>Tải Video Bilibili</h2>
+        <input type="text" id="urlInput" placeholder="Dán link Bilibili vào đây...">
+        <button onclick="fetchVideo()">Lấy Link</button>
         
-        <div id="loading" class="loading" style="display: none;">Đang kết nối lấy dữ liệu video...</div>
+        <div id="loading" class="loading">Đang phân tích video, chờ chút nhé...</div>
         
-        <div id="result" class="result-box">
-            <p style="margin: 0 0 10px 0; font-weight: bold; color: #333;">Đã tìm thấy video của bạn:</p>
-            <a id="downloadLink" href="#" target="_blank">📥 Bấm Vào Đây Để Tải Về</a>
+        <div id="result" class="result">
+            <p id="videoTitle" style="font-weight: bold; font-size: 14px; margin-bottom: 10px; color: #333;"></p>
+            <a id="downloadBtn" href="#" target="_blank">📥 Tải Video Về Máy</a>
         </div>
     </div>
 
     <script>
-        function handleDownload() {
+        async function fetchVideo() {
             let url = document.getElementById('urlInput').value.trim();
             let loading = document.getElementById('loading');
-            let result = document.getElementById('result');
-            let downloadLink = document.getElementById('downloadLink');
+            let resultBox = document.getElementById('result');
+            let downloadBtn = document.getElementById('downloadBtn');
+            let videoTitle = document.getElementById('videoTitle');
 
             if (!url) {
-                alert('Bạn chưa dán link kìa!');
+                alert('Chưa dán link kìa bạn ơi!');
                 return;
             }
 
             loading.style.display = 'block';
-            result.style.display = 'none';
+            resultBox.style.display = 'none';
 
-            // Mô phỏng kết nối mượt mà đến các nguồn hỗ trợ công khai sạch sẽ
-            setTimeout(() => {
+            try {
+                // Sử dụng API công khai để trích xuất link ngầm
+                let response = await fetch(`https://tikwm.com/api/?url=${encodeURIComponent(url)}`);
+                let data = await response.json();
+
                 loading.style.display = 'none';
-                result.style.display = 'block';
-                // Tạo sẵn đường dẫn sạch trỏ thẳng tới công cụ xử lý công khai không quảng cáo rác
-                downloadLink.href = `https://tikwm.com/bilibili/?url=${encodeURIComponent(url)}`;
-            }, 800);
+
+                if (data && data.data) {
+                    let videoData = data.data;
+                    videoTitle.innerText = videoData.title || "Video Bilibili";
+                    downloadBtn.href = videoData.play || videoData.url;
+                    resultBox.style.display = 'block';
+                } else {
+                    alert('Không lấy được video, hãy kiểm tra lại link nhé!');
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                alert('Có lỗi xảy ra khi kết nối tới máy chủ giải mã!');
+            }
         }
     </script>
 
